@@ -1,0 +1,58 @@
+name: Build Eyami Image
+
+on:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: eyami-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve image tags
+        id: image
+        shell: bash
+        run: |
+          branch_tag="$(printf '%s' "$GITHUB_REF_NAME" | tr '/[:upper:]' '-[:lower:]')"
+          {
+            echo "branch=ghcr.io/hasmo-ai/sub2api:eyami-${branch_tag}"
+            echo "commit=ghcr.io/hasmo-ai/sub2api:eyami-${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            VERSION=eyami-${{ github.sha }}
+            COMMIT=${{ github.sha }}
+          tags: |
+            ${{ steps.image.outputs.branch }}
+            ${{ steps.image.outputs.commit }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
