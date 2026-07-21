@@ -41,6 +41,9 @@
         <!-- Language Switcher -->
         <LocaleSwitcher />
 
+        <!-- Solana Wallet -->
+        <SolanaWalletButton v-if="user" />
+
         <!-- Subscription Progress (for users with active subscriptions) -->
         <SubscriptionProgressMini v-if="user" />
 
@@ -249,6 +252,7 @@ import LocaleSwitcher from '@/components/common/LocaleSwitcher.vue'
 import SubscriptionProgressMini from '@/components/common/SubscriptionProgressMini.vue'
 import AnnouncementBell from '@/components/common/AnnouncementBell.vue'
 import Icon from '@/components/icons/Icon.vue'
+import SolanaWalletButton from '@/features/solana-wallet/SolanaWalletButton.vue'
 import { sanitizeUrl } from '@/utils/url'
 
 const router = useRouter()

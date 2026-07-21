@@ -1,6 +1,8 @@
 <template>
   <AppLayout>
     <div class="mx-auto max-w-2xl space-y-6">
+      <EyamiRechargeGuide />
+
       <!-- Current Balance Card -->
       <div class="card overflow-hidden">
         <div class="bg-gradient-to-br from-primary-500 to-primary-600 px-6 py-8 text-center">
@@ -350,6 +352,7 @@ import { useSubscriptionStore } from '@/stores/subscriptions'
 import { redeemAPI, authAPI, type RedeemHistoryItem } from '@/api'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import Icon from '@/components/icons/Icon.vue'
+import EyamiRechargeGuide from '@/features/eyami-branding/EyamiRechargeGuide.vue'
 import { formatDateTime } from '@/utils/format'
 
 const { t } = useI18n()

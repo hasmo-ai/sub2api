@@ -152,7 +152,7 @@ export default {
     apiKeys: 'API 密钥',
     batchImage: '批量生图',
     usage: '使用记录',
-    redeem: '兑换',
+    redeem: '充值',
     affiliate: '邀请返利',
     affiliateManagement: '邀请返利',
     affiliateInviteRecords: '邀请记录',
@@ -194,6 +194,18 @@ export default {
     contentModeration: '内容审核',
     promptAudit: '提示词审计',
     auditLogs: '操作日志',
+  },
+
+  solanaWallet: {
+    wallet: 'Solana 钱包',
+    connect: '连接钱包',
+    connecting: '连接中...',
+    connectedAs: '已连接 {address}',
+    selectWallet: '选择 Solana 钱包',
+    disconnect: '断开钱包',
+    noWallet: '未发现兼容钱包',
+    noWalletDescription: '请安装兼容 Wallet Standard 的 Solana 钱包，然后刷新页面。',
+    connectFailed: '连接失败，请在钱包中确认请求后重试。',
   },
 
   // Auth

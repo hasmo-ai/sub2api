@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="64" viewBox="0 0 180 64" role="img" aria-labelledby="title">
+  <title id="title">eyami</title>
+  <defs>
+    <linearGradient id="eyami-pink-white" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff4fbd"/>
+      <stop offset="60%" stop-color="#ffb7e1"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .eyami-text {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 800;
+      font-size: 48px;
+      letter-spacing: -0.03em;
+      fill: url(#eyami-pink-white);
+    }
+  </style>
+  <text x="5" y="48" class="eyami-text">eyami</text>
+  <circle cx="153" cy="14" r="6.5" fill="#ffffff"/>
+</svg>
