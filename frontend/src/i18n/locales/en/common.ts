@@ -152,7 +152,7 @@ export default {
     apiKeys: 'API Keys',
     batchImage: 'Batch Images',
     usage: 'Usage',
-    redeem: 'Redeem',
+    redeem: 'Recharge',
     affiliate: 'Affiliate Rebates',
     affiliateManagement: 'Affiliate Rebates',
     affiliateInviteRecords: 'Invite Records',
@@ -194,6 +194,18 @@ export default {
     contentModeration: 'Content Moderation',
     promptAudit: 'Prompt Audit',
     auditLogs: 'Audit Logs',
+  },
+
+  solanaWallet: {
+    wallet: 'Solana Wallet',
+    connect: 'Connect wallet',
+    connecting: 'Connecting...',
+    connectedAs: 'Connected as {address}',
+    selectWallet: 'Select a Solana wallet',
+    disconnect: 'Disconnect wallet',
+    noWallet: 'No compatible wallet found',
+    noWalletDescription: 'Install a Wallet Standard-compatible Solana wallet and refresh this page.',
+    connectFailed: 'Could not connect. Confirm the request in your wallet and try again.',
   },
 
   // Auth

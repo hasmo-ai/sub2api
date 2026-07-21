@@ -573,9 +573,14 @@ export default {
 
   // Redeem
   redeem: {
-    title: '兑换码',
+    title: '充值',
     description: '输入兑换码以充值余额或增加并发数',
     currentBalance: '当前余额',
+    rechargeGuideTitle: '充值 API 调用额度',
+    rechargeGuideLead: '选择额度并完成购买，获得兑换码后在本页下方兑换，额度会立即充入当前登录账号。',
+    rechargeRate: '兑换比例：¥1 = $2 API 调用额度，¥10 起充。',
+    rechargeNote: '请先确认当前账号正确。虚拟商品成功兑换后不可退款，也不能转移到其他账号。',
+    rechargeOptionLabel: '支付 {price} 购买 {credit} API 调用额度',
     concurrency: '并发数',
     requests: '请求',
     redeemCodeLabel: '兑换码',

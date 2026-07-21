@@ -43,6 +43,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -56,3 +57,25 @@ jobs:
             ${{ steps.image.outputs.commit }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Record immutable image digest
+        env:
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! printf '%s\n' "$IMAGE_DIGEST" | grep -Eq '^sha256:[0-9a-f]{64}$'
+          then
+            echo "Invalid image digest: $IMAGE_DIGEST" >&2
+            exit 1
+          fi
+
+          image_ref="ghcr.io/hasmo-ai/sub2api@${IMAGE_DIGEST}"
+          {
+            echo '### Eyami image'
+            echo
+            echo "\`${image_ref}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          docker pull "$image_ref"
