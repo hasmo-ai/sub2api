@@ -1,0 +1,173 @@
+name: Deploy Eyami
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full commit SHA to deploy after all quality gates pass
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+concurrency:
+  group: eyami-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: eyami-production
+    steps:
+      - name: Resolve commit
+        id: revision
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+          DISPATCH_SHA: ${{ inputs.commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == 'workflow_run' ]]; then
+            commit="$WORKFLOW_RUN_SHA"
+          else
+            commit="$DISPATCH_SHA"
+          fi
+
+          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "A full 40-character commit SHA is required" >&2
+            exit 1
+          fi
+
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for CI, security scan, and image build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ steps.revision.outputs.commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          workflows=(backend-ci.yml security-scan.yml eyami-image.yml)
+          for attempt in $(seq 1 40); do
+            all_success=true
+
+            for workflow in "${workflows[@]}"; do
+              state="$({
+                gh api -X GET \
+                  "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs" \
+                  -f head_sha="$COMMIT_SHA" \
+                  -f event=push \
+                  -f per_page=10 \
+                  --jq '.workflow_runs[0] | [.status, (.conclusion // "")] | @tsv'
+              } 2>/dev/null || true)"
+
+              status="${state%%$'\t'*}"
+              conclusion="${state#*$'\t'}"
+              if [[ -z "$state" || "$status" != completed ]]; then
+                all_success=false
+                printf '%s: waiting\n' "$workflow"
+                continue
+              fi
+              if [[ "$conclusion" != success ]]; then
+                printf '%s: %s\n' "$workflow" "$conclusion" >&2
+                exit 1
+              fi
+              printf '%s: success\n' "$workflow"
+            done
+
+            if [[ "$all_success" == true ]]; then
+              exit 0
+            fi
+            if [[ "$attempt" == 40 ]]; then
+              echo 'Timed out waiting for quality gates' >&2
+              exit 1
+            fi
+            sleep 15
+          done
+
+      - name: Resolve immutable image digest
+        id: image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ steps.revision.outputs.commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          printf '%s\n' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          image_tag="ghcr.io/hasmo-ai/sub2api:eyami-${COMMIT_SHA}"
+          docker pull "$image_tag"
+          repo_digest="$(docker inspect --format '{{index .RepoDigests 0}}' "$image_tag")"
+          digest="${repo_digest##*@}"
+
+          if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Invalid image digest: $digest" >&2
+            exit 1
+          fi
+
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/hasmo-ai/sub2api@$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Configure restricted deployment key
+        env:
+          DEPLOY_KEY: ${{ secrets.EYAMI_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.EYAMI_DEPLOY_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$HOME/.ssh/eyami_deploy"
+          chmod 600 "$HOME/.ssh/eyami_deploy"
+          printf '%s\n' "$KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Deploy to Netcup and verify health
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_HOST: ${{ secrets.EYAMI_DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.EYAMI_DEPLOY_USER }}
+          COMMIT_SHA: ${{ steps.revision.outputs.commit }}
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          printf '%s\n' "$GH_TOKEN" | ssh \
+            -i "$HOME/.ssh/eyami_deploy" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "deploy $IMAGE_DIGEST $COMMIT_SHA $GITHUB_ACTOR"
+
+      - name: Record deployment
+        env:
+          COMMIT_SHA: ${{ steps.revision.outputs.commit }}
+          IMAGE_REF: ${{ steps.image.outputs.image }}
+        shell: bash
+        run: |
+          {
+            echo '### Eyami production deployment'
+            echo
+            echo "- Commit: \`$COMMIT_SHA\`"
+            echo "- Image: \`$IMAGE_REF\`"
+          } >> "$GITHUB_STEP_SUMMARY"
