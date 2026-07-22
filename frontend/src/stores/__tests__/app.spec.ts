@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAppStore } from '@/stores/app'
 import { getPublicSettings } from '@/api/auth'
+import { applyEyamiBranding, EYAMI_BRAND } from '@/branding/eyami'
 import type { PublicSettings } from '@/types'
 
 function createDeferred<T>() {
@@ -341,10 +342,11 @@ describe('useAppStore', () => {
       expect(settled).not.toHaveBeenCalled()
 
       deferred.resolve(settings)
+      const brandedSettings = applyEyamiBranding(settings)
       await expect(Promise.all([first, second, forced])).resolves.toEqual([
-        settings,
-        settings,
-        settings,
+        brandedSettings,
+        brandedSettings,
+        brandedSettings,
       ])
       expect(store.publicSettingsLoaded).toBe(true)
       expect(store.cachedPublicSettings?.payment_enabled).toBe(true)
@@ -366,10 +368,14 @@ describe('useAppStore', () => {
       expect(getPublicSettings).toHaveBeenCalledTimes(2)
 
       deferred.resolve(updated)
-      await expect(Promise.all([refresh, duringRefresh])).resolves.toEqual([updated, updated])
-      expect(store.siteName).toBe('Updated Site')
+      const brandedUpdated = applyEyamiBranding(updated)
+      await expect(Promise.all([refresh, duringRefresh])).resolves.toEqual([
+        brandedUpdated,
+        brandedUpdated
+      ])
+      expect(store.siteName).toBe(EYAMI_BRAND.name)
 
-      await expect(store.fetchPublicSettings()).resolves.toEqual(updated)
+      await expect(store.fetchPublicSettings()).resolves.toEqual(brandedUpdated)
       expect(getPublicSettings).toHaveBeenCalledTimes(2)
     })
 
@@ -405,8 +411,8 @@ describe('useAppStore', () => {
       const result = store.initFromInjectedConfig()
 
       expect(result).toBe(true)
-      expect(store.siteName).toBe('TestSite')
-      expect(store.siteLogo).toBe('/logo.png')
+      expect(store.siteName).toBe(EYAMI_BRAND.name)
+      expect(store.siteLogo).toBe(EYAMI_BRAND.logo)
       expect(store.siteVersion).toBe('1.0.0')
       expect(store.publicSettingsLoaded).toBe(true)
     })

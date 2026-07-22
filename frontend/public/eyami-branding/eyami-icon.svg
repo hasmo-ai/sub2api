@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-labelledby="title">
+  <title id="title">Eyami Pink-White Icon</title>
+  <!-- 柔和的粉色底座 -->
+  <rect x="12" y="12" width="72" height="72" rx="26" fill="#ff4fbd"/>
+
+  <!-- 白色流动的 "e" 标识 -->
+  <g transform="translate(28 28)">
+    <path d="M32 12C32 5.37258 26.6274 0 20 0C13.3726 0 8 5.37258 8 12C8 18.6274 13.3726 24 20 24H36"
+          stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M8 12H28" stroke="#ffffff" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <!-- 白色小亮点 -->
+    <circle cx="36" cy="24" r="2.5" fill="#ffffff"/>
+  </g>
+</svg>

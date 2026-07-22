@@ -568,9 +568,14 @@ export default {
 
   // Redeem
   redeem: {
-    title: 'Redeem Code',
+    title: 'Recharge',
     description: 'Enter your redeem code to add balance or increase concurrency',
     currentBalance: 'Current Balance',
+    rechargeGuideTitle: 'Recharge API Credit',
+    rechargeGuideLead: 'Choose an amount and complete your purchase. Enter the redeem code below to add the credit to this account immediately.',
+    rechargeRate: 'Rate: ¥1 = $2 API credit. Minimum recharge: ¥10.',
+    rechargeNote: 'Confirm that you are signed in to the correct account. Redeemed digital goods cannot be refunded or transferred to another account.',
+    rechargeOptionLabel: 'Pay {price} for {credit} API credit',
     concurrency: 'Concurrency',
     requests: 'requests',
     redeemCodeLabel: 'Redeem Code',

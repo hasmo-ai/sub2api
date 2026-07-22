@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from './client'
+import { applyEyamiBranding } from '@/branding/eyami'
 import type {
   LoginRequest,
   RegisterRequest,
@@ -333,7 +334,7 @@ export function isAuthenticated(): boolean {
  */
 export async function getPublicSettings(): Promise<PublicSettings> {
   const { data } = await apiClient.get<PublicSettings>('/settings/public')
-  return data
+  return applyEyamiBranding(data)
 }
 
 export type WeChatOAuthMode = 'open' | 'mp'
