@@ -208,6 +208,20 @@ export default {
     connectFailed: '连接失败，请在钱包中确认请求后重试。',
   },
 
+  cryptoDeposit: {
+    title: '链上充值',
+    amount: '充值金额',
+    amountPlaceholder: '请输入金额',
+    minHint: '最低充值约 {usd} 美元等值',
+    connectHint: '请先点击页面右上角的钱包按钮连接 Solana 钱包。',
+    submit: '发起链上充值',
+    successTitle: '交易已提交',
+    successNote: '已提交，链上确认后约 1 分钟自动到账。',
+    viewOnExplorer: '在 Solana Explorer 查看交易',
+    again: '再充一笔',
+    failed: '交易提交失败，请在钱包中确认请求后重试。',
+  },
+
   // Auth
   auth: {
     welcomeBack: '欢迎回来',

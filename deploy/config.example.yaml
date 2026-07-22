@@ -1241,3 +1241,23 @@ image_storage:
   presign_expiry_hours: 24
   # 当上游返回的是图片 url 时，下载该图片再转存的字节上限（默认 32MB）
   max_download_bytes: 33554432
+
+# =============================================================================
+# Solana Deposit (Solana 链上充值公开配置)
+# =============================================================================
+# 用户端只读接口 GET /api/v1/user/deposit-config 会把以下公开参数返回给前端，
+# 充值页据此决定是否展示"链上充值"入口，并拿到 Anchor 程序 ID 等信息。
+# 也可通过环境变量配置：SOLANA_DEPOSIT_ENABLED / SOLANA_CLUSTER /
+# SOLANA_PROGRAM_ID / SOLANA_USDC_MINT / SOLANA_MIN_DEPOSIT_USD
+#
+# solana_deposit:
+#   # 是否启用链上充值入口（默认 false）
+#   enabled: false
+#   # Solana 集群：devnet / mainnet-beta 等（默认 devnet）
+#   cluster: "devnet"
+#   # Anchor 程序 ID
+#   program_id: ""
+#   # USDC mint 地址
+#   usdc_mint: ""
+#   # 最小充值金额（USD，默认 1.0）
+#   min_deposit_usd: 1.0

@@ -1,0 +1,9 @@
+overrides:
+  js-cookie: 3.0.7
+  form-data@<4.0.6: ">=4.0.6"
+
+allowBuilds:
+  bufferutil: false
+  esbuild: true
+  utf-8-validate: false
+  vue-demi: true

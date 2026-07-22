@@ -118,11 +118,15 @@ backend/.installed
 tests
 !deploy/tests/
 !deploy/tests/**
+!solana-deposit/tests/
+!solana-deposit/tests/**
 CLAUDE.md
 .claude
 scripts
 !backend/scripts/
 !backend/scripts/resolve-version.sh
+!solana-deposit/scripts/
+!solana-deposit/scripts/**
 .code-review-state
 #openspec/
 code-reviews/
@@ -136,6 +140,7 @@ docs/*
 !docs/PAYMENT_CN.md
 !docs/ADMIN_PAYMENT_INTEGRATION_API.md
 !docs/ASYNC_IMAGE_TASKS.md
+!docs/SOLANA_DEPOSIT_CN.md
 !docs/legal/
 !docs/legal/*.md
 .serena/
@@ -143,3 +148,23 @@ docs/*
 frontend/coverage/
 aicodex
 output/
+
+# ===================
+# Solana / Anchor（solana-deposit）
+# ===================
+# 构建产物与本地 validator 账本
+solana-deposit/target/
+solana-deposit/.anchor/
+solana-deposit/test-ledger/
+# 合约部署 keypair（含私钥，绝不提交；部署时由 anchor 生成）
+solana-deposit/*keypair*.json
+
+# ===================
+# Rust（solana-watcher）
+# ===================
+solana-watcher/target/
+# 监听服务本地数据库（游标与已处理交易记录）
+solana-watcher/*.db
+solana-watcher/*.db-journal
+solana-watcher/*.db-wal
+solana-watcher/*.db-shm

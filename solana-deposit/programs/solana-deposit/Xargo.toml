@@ -1,0 +1,4 @@
+# This file is used by cargo to build the Solana program with the
+# solana platform-tools toolchain (required by anchor build).
+[target.bpfel-unknown-unknown]
+rustflags = ["-C", "lto"]

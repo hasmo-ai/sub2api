@@ -118,6 +118,17 @@ services:
       - TZ=${TZ:-Asia/Shanghai}
 
       # =======================================================================
+      # Solana On-chain Deposit (Solana 链上充值，可选)
+      # =======================================================================
+      # 启用后前端充值页显示"链上充值"入口；需配合 solana-watcher 服务
+      # (docker compose --profile solana up -d) 完成链上确认后的自动入账
+      - SOLANA_DEPOSIT_ENABLED=${SOLANA_DEPOSIT_ENABLED:-false}
+      - SOLANA_CLUSTER=${SOLANA_CLUSTER:-devnet}
+      - SOLANA_PROGRAM_ID=${SOLANA_PROGRAM_ID:-}
+      - SOLANA_USDC_MINT=${SOLANA_USDC_MINT:-}
+      - SOLANA_MIN_DEPOSIT_USD=${SOLANA_MIN_DEPOSIT_USD:-1.0}
+
+      # =======================================================================
       # Gemini OAuth Configuration (for Gemini accounts)
       # =======================================================================
       - GEMINI_OAUTH_CLIENT_ID=${GEMINI_OAUTH_CLIENT_ID:-}
@@ -266,6 +277,31 @@ services:
       start_period: 5s
     # 注意：不暴露端口到宿主机，应用通过内部网络连接
     # 如需调试，可临时添加：ports: ["127.0.0.1:6379:6379"]
+
+  # ===========================================================================
+  # Solana On-chain Deposit Watcher (可选，profile: solana)
+  # 监听 Anchor 充值合约的 DepositEvent，确认后调 Admin API 自动入账。
+  # 启动：docker compose --profile solana up -d
+  # ===========================================================================
+  solana-watcher:
+    profiles: ["solana"]
+    build:
+      context: ../solana-watcher
+    image: sub2api-solana-watcher:latest
+    container_name: sub2api-solana-watcher
+    restart: unless-stopped
+    volumes:
+      - solana_watcher_data:/app/data
+    environment:
+      - RPC_HTTP_URL=${SOLANA_RPC_HTTP_URL:-https://api.devnet.solana.com}
+      - PROGRAM_ID=${SOLANA_PROGRAM_ID:?SOLANA_PROGRAM_ID is required when using the solana profile}
+      - SUB2API_BASE_URL=http://sub2api:8080
+      - ADMIN_API_KEY=${SOLANA_WATCHER_ADMIN_API_KEY:?SOLANA_WATCHER_ADMIN_API_KEY is required when using the solana profile}
+      - MIN_DEPOSIT_USD=${SOLANA_MIN_DEPOSIT_USD:-1.0}
+      - POLL_INTERVAL_SECS=${SOLANA_WATCHER_POLL_INTERVAL_SECS:-15}
+      - DB_PATH=/app/data/solana-watcher.db
+    networks:
+      - sub2api-network
 # =============================================================================
 # Volumes
 # =============================================================================
@@ -275,6 +311,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  solana_watcher_data:
     driver: local
 
 # =============================================================================

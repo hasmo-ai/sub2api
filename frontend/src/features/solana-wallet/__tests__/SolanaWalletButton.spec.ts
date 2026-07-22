@@ -1,7 +1,13 @@
-import { mount } from '@vue/test-utils'
+import { mount, type VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SolanaWalletButton from '../SolanaWalletButton.vue'
+import {
+  account,
+  connectingWalletName,
+  selectedWallet,
+  wallets,
+} from '../useSolanaWallet'
 
 const walletState = vi.hoisted(() => ({
   wallets: [] as Array<Record<string, unknown>>,
@@ -58,10 +64,29 @@ function createWallet(options: { solana?: boolean; signMessage?: boolean } = {})
 }
 
 describe('SolanaWalletButton', () => {
+  const mounted: VueWrapper[] = []
+
+  function mountButton() {
+    const wrapper = mount(SolanaWalletButton, {
+      global: { stubs: { Teleport: true } },
+    })
+    mounted.push(wrapper)
+    return wrapper
+  }
+
   beforeEach(() => {
     walletState.wallets = []
     walletState.listeners.register.clear()
     walletState.listeners.unregister.clear()
+    // Reset module-level singleton wallet state shared via the composable.
+    wallets.value = []
+    selectedWallet.value = null
+    account.value = null
+    connectingWalletName.value = ''
+  })
+
+  afterEach(() => {
+    while (mounted.length) mounted.pop()!.unmount()
   })
 
   it('only lists Solana wallets that can sign a binding message', async () => {
@@ -70,9 +95,7 @@ describe('SolanaWalletButton', () => {
     const cannotSign = createWallet({ signMessage: false })
     walletState.wallets = [compatible.wallet, wrongChain.wallet, cannotSign.wallet]
 
-    const wrapper = mount(SolanaWalletButton, {
-      global: { stubs: { Teleport: true } },
-    })
+    const wrapper = mountButton()
     await wrapper.get('[data-testid="solana-wallet-trigger"]').trigger('click')
 
     const choices = wrapper.findAll('[data-wallet-name]')
@@ -81,9 +104,7 @@ describe('SolanaWalletButton', () => {
   })
 
   it('updates the list when a wallet registers after mount', async () => {
-    const wrapper = mount(SolanaWalletButton, {
-      global: { stubs: { Teleport: true } },
-    })
+    const wrapper = mountButton()
     const compatible = createWallet()
     walletState.wallets = [compatible.wallet]
 
@@ -97,9 +118,7 @@ describe('SolanaWalletButton', () => {
     const compatible = createWallet()
     walletState.wallets = [compatible.wallet]
 
-    const wrapper = mount(SolanaWalletButton, {
-      global: { stubs: { Teleport: true } },
-    })
+    const wrapper = mountButton()
     await wrapper.get('[data-testid="solana-wallet-trigger"]').trigger('click')
     await wrapper.get('[data-wallet-name="Test Solana Wallet"]').trigger('click')
     await nextTick()
@@ -112,5 +131,18 @@ describe('SolanaWalletButton', () => {
 
     expect(compatible.disconnect).toHaveBeenCalledOnce()
     expect(wrapper.get('[data-testid="solana-wallet-trigger"]').text()).toContain('solanaWallet.connect')
+  })
+
+  it('shares connection state between two mounted buttons', async () => {
+    const compatible = createWallet()
+    walletState.wallets = [compatible.wallet]
+
+    const first = mountButton()
+    const second = mountButton()
+    await first.get('[data-testid="solana-wallet-trigger"]').trigger('click')
+    await first.get('[data-wallet-name="Test Solana Wallet"]').trigger('click')
+    await nextTick()
+
+    expect(second.get('[data-testid="solana-wallet-trigger"]').text()).toContain('7YWH...9abc')
   })
 })

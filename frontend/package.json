@@ -2,6 +2,7 @@
   "name": "sub2api-frontend",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@11.15.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,9 +17,11 @@
   },
   "dependencies": {
     "@airwallex/components-sdk": "^1.30.2",
+    "@coral-xyz/anchor": "^0.31.1",
     "@lobehub/icons": "^4.0.2",
     "@lucide/vue": "^1.25.0",
     "@solana/wallet-standard-features": "^1.4.0",
+    "@solana/web3.js": "^1.98.4",
     "@stripe/stripe-js": "^9.0.1",
     "@tanstack/vue-virtual": "^3.13.23",
     "@vueuse/core": "^10.7.0",
@@ -63,11 +66,5 @@
     "vite-plugin-checker": "^0.9.1",
     "vitest": "^2.1.9",
     "vue-tsc": "^2.2.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "js-cookie": "3.0.7",
-      "form-data@<4.0.6": ">=4.0.6"
-    }
   }
 }

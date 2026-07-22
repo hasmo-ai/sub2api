@@ -96,6 +96,7 @@ type Config struct {
 	Idempotency             IdempotencyConfig             `mapstructure:"idempotency"`
 	BatchImage              BatchImageConfig              `mapstructure:"batch_image"`
 	ImageStorage            ImageStorageConfig            `mapstructure:"image_storage"`
+	SolanaDeposit           SolanaDepositConfig           `mapstructure:"solana_deposit"`
 }
 
 type LogConfig struct {
@@ -253,6 +254,17 @@ func (c *ImageStorageConfig) IsConfigured() bool {
 // Active 返回异步图片任务是否可用：开关打开且凭证齐全
 func (c *ImageStorageConfig) Active() bool {
 	return c.Enabled && c.IsConfigured()
+}
+
+// SolanaDepositConfig Solana 链上充值公开配置。
+// 仅包含可公开给前端的信息（程序 ID、USDC mint 等），用于充值页决定是否
+// 展示"链上充值"入口；敏感信息（如收款账户、签名密钥）不在此配置中。
+type SolanaDepositConfig struct {
+	Enabled       bool    `mapstructure:"enabled"`
+	Cluster       string  `mapstructure:"cluster"` // devnet / mainnet-beta 等
+	ProgramID     string  `mapstructure:"program_id"`
+	USDCMint      string  `mapstructure:"usdc_mint"`
+	MinDepositUSD float64 `mapstructure:"min_deposit_usd"`
 }
 
 type LinuxDoConnectConfig struct {
@@ -1940,6 +1952,13 @@ func setDefaults() {
 	viper.SetDefault("image_storage.force_path_style", false)
 	viper.SetDefault("image_storage.presign_expiry_hours", 24)
 	viper.SetDefault("image_storage.max_download_bytes", 33554432)
+
+	// Solana deposit (链上充值公开配置)
+	viper.SetDefault("solana_deposit.enabled", false)
+	viper.SetDefault("solana_deposit.cluster", "devnet")
+	viper.SetDefault("solana_deposit.program_id", "")
+	viper.SetDefault("solana_deposit.usdc_mint", "")
+	viper.SetDefault("solana_deposit.min_deposit_usd", 1.0)
 
 	// Ops (vNext)
 	viper.SetDefault("ops.enabled", true)

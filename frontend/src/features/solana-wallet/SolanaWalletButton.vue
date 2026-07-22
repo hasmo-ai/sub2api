@@ -48,7 +48,7 @@
           type="button"
           class="btn btn-secondary w-full text-red-600 dark:text-red-400"
           data-testid="solana-wallet-disconnect"
-          @click="disconnect"
+          @click="disconnectWallet"
         >
           {{ t('solanaWallet.disconnect') }}
         </button>
@@ -63,7 +63,7 @@
             class="flex w-full items-center gap-3 rounded-lg border border-gray-200 px-3 py-2.5 text-left transition-colors hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 dark:border-dark-700 dark:hover:border-primary-700 dark:hover:bg-primary-900/20"
             :disabled="isConnecting"
             :data-wallet-name="wallet.name"
-            @click="connect(wallet)"
+            @click="connectWallet(wallet)"
           >
             <img :src="wallet.icon" :alt="wallet.name" class="h-9 w-9 rounded-lg">
             <span class="min-w-0 flex-1 truncate font-medium text-gray-900 dark:text-white">
@@ -102,117 +102,44 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Coins } from '@lucide/vue'
-import { getWallets } from '@wallet-standard/app'
-import type { Wallet, WalletAccount } from '@wallet-standard/base'
-import {
-  StandardConnect,
-  StandardDisconnect,
-  StandardEvents,
-  type StandardConnectFeature,
-  type StandardDisconnectFeature,
-  type StandardEventsFeature,
-} from '@wallet-standard/features'
-import {
-  SolanaSignMessage,
-  type SolanaSignMessageFeature,
-} from '@solana/wallet-standard-features'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import Icon from '@/components/icons/Icon.vue'
-
-type SolanaWallet = Omit<Wallet, 'features'> & {
-  readonly features: Wallet['features'] & StandardConnectFeature & SolanaSignMessageFeature
-}
+import { useSolanaWallet, type SolanaWallet } from './useSolanaWallet'
 
 const { t } = useI18n()
-const walletRegistry = getWallets()
-const wallets = shallowRef<SolanaWallet[]>([])
-const selectedWallet = shallowRef<SolanaWallet | null>(null)
-const account = shallowRef<WalletAccount | null>(null)
+const {
+  wallets,
+  selectedWallet,
+  account,
+  connectingWalletName,
+  isConnecting,
+  shortenedAddress,
+  connect,
+  disconnect,
+  initSolanaWallet,
+  teardownSolanaWallet,
+} = useSolanaWallet()
+
 const dialogOpen = ref(false)
-const connectingWalletName = ref('')
 const errorMessage = ref('')
 
-let removeWalletChangeListener: (() => void) | undefined
-let removeRegisterListener: (() => void) | undefined
-let removeUnregisterListener: (() => void) | undefined
-
-const isConnecting = computed(() => Boolean(connectingWalletName.value))
-const shortenedAddress = computed(() => {
-  if (!account.value) return ''
-  return `${account.value.address.slice(0, 4)}...${account.value.address.slice(-4)}`
-})
-
-function isSolanaAccount(candidate: WalletAccount): boolean {
-  return candidate.chains.some((chain) => chain.startsWith('solana:'))
-}
-
-function isSolanaWallet(candidate: Wallet): candidate is SolanaWallet {
-  return candidate.chains.some((chain) => chain.startsWith('solana:'))
-    && StandardConnect in candidate.features
-    && SolanaSignMessage in candidate.features
-}
-
-function refreshWallets(): void {
-  wallets.value = walletRegistry.get().filter(isSolanaWallet)
-  if (selectedWallet.value && !wallets.value.includes(selectedWallet.value)) {
-    clearConnection()
-  }
-}
-
-function watchWalletAccounts(wallet: SolanaWallet): void {
-  removeWalletChangeListener?.()
-  const events = wallet.features[StandardEvents] as StandardEventsFeature[typeof StandardEvents] | undefined
-  removeWalletChangeListener = events?.on('change', ({ accounts }) => {
-    if (!accounts) return
-    account.value = accounts.find(isSolanaAccount) ?? null
-    if (!account.value) clearConnection()
-  })
-}
-
-async function connect(wallet: SolanaWallet): Promise<void> {
-  connectingWalletName.value = wallet.name
+async function connectWallet(wallet: SolanaWallet): Promise<void> {
   errorMessage.value = ''
-
-  try {
-    const result = await wallet.features[StandardConnect].connect()
-    const solanaAccount = result.accounts.find(isSolanaAccount)
-    if (!solanaAccount) throw new Error('Wallet returned no Solana account')
-
-    selectedWallet.value = wallet
-    account.value = solanaAccount
-    watchWalletAccounts(wallet)
+  const connected = await connect(wallet)
+  if (connected) {
     dialogOpen.value = false
-  } catch (error) {
-    console.warn('Solana wallet connection failed:', error)
+  } else {
     errorMessage.value = t('solanaWallet.connectFailed')
-  } finally {
-    connectingWalletName.value = ''
   }
 }
 
-async function disconnect(): Promise<void> {
-  const wallet = selectedWallet.value
+async function disconnectWallet(): Promise<void> {
   errorMessage.value = ''
-
-  try {
-    const disconnectFeature = wallet?.features[StandardDisconnect] as StandardDisconnectFeature[typeof StandardDisconnect] | undefined
-    await disconnectFeature?.disconnect()
-  } catch (error) {
-    console.warn('Solana wallet disconnect failed:', error)
-  } finally {
-    clearConnection()
-    dialogOpen.value = false
-  }
-}
-
-function clearConnection(): void {
-  removeWalletChangeListener?.()
-  removeWalletChangeListener = undefined
-  selectedWallet.value = null
-  account.value = null
+  await disconnect()
+  dialogOpen.value = false
 }
 
 function closeDialog(): void {
@@ -220,14 +147,10 @@ function closeDialog(): void {
 }
 
 onMounted(() => {
-  refreshWallets()
-  removeRegisterListener = walletRegistry.on('register', refreshWallets)
-  removeUnregisterListener = walletRegistry.on('unregister', refreshWallets)
+  initSolanaWallet()
 })
 
 onBeforeUnmount(() => {
-  removeRegisterListener?.()
-  removeUnregisterListener?.()
-  removeWalletChangeListener?.()
+  teardownSolanaWallet()
 })
 </script>

@@ -23,6 +23,15 @@ export interface PublicOrderVerifyResult {
   expires_at: string
 }
 
+/** On-chain (Solana) deposit configuration returned by the backend */
+export interface DepositConfig {
+  enabled: boolean
+  cluster: 'devnet' | 'mainnet-beta'
+  program_id: string
+  usdc_mint: string
+  min_deposit_usd: number
+}
+
 export const paymentAPI = {
   /** Get payment configuration (enabled types, limits, etc.) */
   getConfig() {
@@ -87,5 +96,10 @@ export const paymentAPI = {
   /** Get provider instance IDs that allow user refund */
   getRefundEligibleProviders() {
     return apiClient.get<{ provider_instance_ids: string[] }>('/payment/orders/refund-eligible-providers')
+  },
+
+  /** Get on-chain (Solana) deposit configuration */
+  getDepositConfig() {
+    return apiClient.get<DepositConfig>('/user/deposit-config')
   }
 }

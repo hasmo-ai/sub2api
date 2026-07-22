@@ -208,6 +208,20 @@ export default {
     connectFailed: 'Could not connect. Confirm the request in your wallet and try again.',
   },
 
+  cryptoDeposit: {
+    title: 'On-chain Deposit',
+    amount: 'Amount',
+    amountPlaceholder: 'Enter amount',
+    minHint: 'Minimum deposit is about {usd} USD equivalent',
+    connectHint: 'Connect a Solana wallet using the wallet button in the top-right corner first.',
+    submit: 'Deposit on-chain',
+    successTitle: 'Transaction submitted',
+    successNote: 'Submitted. Your balance will be credited automatically about 1 minute after on-chain confirmation.',
+    viewOnExplorer: 'View on Solana Explorer',
+    again: 'Make another deposit',
+    failed: 'Failed to submit the transaction. Confirm the request in your wallet and try again.',
+  },
+
   // Auth
   auth: {
     welcomeBack: 'Welcome Back',
