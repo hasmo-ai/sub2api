@@ -168,3 +168,6 @@ solana-watcher/*.db
 solana-watcher/*.db-journal
 solana-watcher/*.db-wal
 solana-watcher/*.db-shm
+
+# Vitest / Vite cache at repo root
+.vite/
