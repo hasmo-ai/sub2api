@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
+  '@coral-xyz/anchor>toml': ^4.2.0
   dompurify@<3.4.14: '>=3.4.14'
   js-cookie: 3.0.7
   form-data@<4.0.6: '>=4.0.6'
@@ -4324,8 +4325,9 @@ packages:
   to-vfile@8.0.0:
     resolution: {integrity: sha512-IcmH1xB5576MJc9qcfEC/m/nQCFt3fzMHz45sSlgJyTWjRbKW1HAkJpuf3DgE57YzIlZcwcBZA5ENQbBo4aLkg==}
 
-  toml@3.0.0:
-    resolution: {integrity: sha512-y/mWCZinnvxjTKYhJ+pYxwD0mRLVvOtdS2Awbgxln6iEnt4rk0yBxeSBHkGJcPucRiG0e55mwWp+g/05rsrd6w==}
+  toml@4.3.0:
+    resolution: {integrity: sha512-lVb8X9BsPVuH0M4BKeS91tXAmJvCjQ5UIyAbQFaxkKGyUFK2RPkhwaFSQH8vbpl1d23eu/IBH+dwVMHWaq9A5A==}
+    engines: {node: '>=20'}
 
   tough-cookie@4.1.4:
     resolution: {integrity: sha512-Loo5UUvLD9ScZ6jh8beX1T6sO1w2/MpCRpEP7V280GKMVUQ0Jzar2U3UJPsrdbziLEMMhu3Ujnq//rhiFuIeag==}
@@ -5007,7 +5009,7 @@ snapshots:
       eventemitter3: 4.0.7
       pako: 2.2.0
       superstruct: 0.15.5
-      toml: 3.0.0
+      toml: 4.3.0
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -9794,7 +9796,7 @@ snapshots:
     dependencies:
       vfile: 6.0.3
 
-  toml@3.0.0: {}
+  toml@4.3.0: {}
 
   tough-cookie@4.1.4:
     dependencies:
