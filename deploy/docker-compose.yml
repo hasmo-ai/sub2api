@@ -340,9 +340,9 @@ services:
       - solana_watcher_data:/app/data
     environment:
       - RPC_HTTP_URL=${SOLANA_RPC_HTTP_URL:-https://api.devnet.solana.com}
-      - PROGRAM_ID=${SOLANA_PROGRAM_ID:?SOLANA_PROGRAM_ID is required when using the solana profile}
+      - PROGRAM_ID=${SOLANA_PROGRAM_ID:-}
       - SUB2API_BASE_URL=http://sub2api:8080
-      - ADMIN_API_KEY=${SOLANA_WATCHER_ADMIN_API_KEY:?SOLANA_WATCHER_ADMIN_API_KEY is required when using the solana profile}
+      - ADMIN_API_KEY=${SOLANA_WATCHER_ADMIN_API_KEY:-}
       - MIN_DEPOSIT_USD=${SOLANA_MIN_DEPOSIT_USD:-1.0}
       - POLL_INTERVAL_SECS=${SOLANA_WATCHER_POLL_INTERVAL_SECS:-15}
       - DB_PATH=/app/data/solana-watcher.db
